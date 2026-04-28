@@ -12,6 +12,12 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+echo "Installing frontend dependencies..."
+cd "$ROOT_DIR/frontend" && npm install
+
+echo "Installing embedded app dependencies..."
+cd "$ROOT_DIR/embedded-app" && npm install
+
 echo "Starting backend (port 8080)..."
 cd "$ROOT_DIR/backend" && ./gradlew bootRun &
 

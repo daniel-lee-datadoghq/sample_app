@@ -1,0 +1,72 @@
+@if (loading) {
+  <div class="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+} @else {
+  <h1>Dashboard</h1>
+
+  <div class="summary-cards">
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <mat-icon class="card-icon">account_balance_wallet</mat-icon>
+        <div class="card-info">
+          <span class="card-label">Total Balance</span>
+          <span class="card-value">{{ totalBalance | currency }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <mat-icon class="card-icon">credit_card</mat-icon>
+        <div class="card-info">
+          <span class="card-label">Accounts</span>
+          <span class="card-value">{{ accountCount }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <mat-icon class="card-icon">receipt_long</mat-icon>
+        <div class="card-info">
+          <span class="card-label">Recent Transactions</span>
+          <span class="card-value">{{ recentTransactions.length }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-card class="transactions-card">
+    <mat-card-header>
+      <mat-card-title>Recent Activity</mat-card-title>
+      <span class="spacer"></span>
+      <button mat-flat-button (click)="addTransaction()">
+        <mat-icon>add</mat-icon> New Transaction
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="recentTransactions" class="transactions-table">
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let t">{{ t.date | date:'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let t">{{ t.description }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Amount</th>
+          <td mat-cell *matCellDef="let t" [class.positive]="t.amount > 0" [class.negative]="t.amount < 0">
+            {{ t.amount | currency }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

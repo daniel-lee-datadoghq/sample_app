@@ -1,0 +1,36 @@
+h1 {
+  margin-top: 0;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.accounts-table {
+  width: 100%;
+}
+
+.clickable-row {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--mat-sys-surface-variant);
+  }
+}
+
+mat-icon {
+  color: var(--mat-sys-primary);
+}
+
+.negative {
+  color: var(--mat-sys-error);
+}

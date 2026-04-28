@@ -1,0 +1,17 @@
+{
+  "name": "embedded-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone embedded app for cross-origin iframe RUM demo (Case B)",
+  "scripts": {
+    "dev": "vite --port 4201",
+    "build": "vite build",
+    "serve": "vite --port 4201"
+  },
+  "dependencies": {
+    "@datadog/browser-rum": "^6.32.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.0"
+  }
+}

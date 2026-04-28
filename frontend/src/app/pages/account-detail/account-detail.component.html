@@ -1,0 +1,86 @@
+@if (loading) {
+  <div class="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+} @else if (account) {
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ account.name }}</h1>
+  </div>
+
+  <mat-card class="account-info-card">
+    <mat-card-content>
+      <div class="account-details">
+        <div class="detail">
+          <mat-icon>{{ getAccountIcon(account.type) }}</mat-icon>
+          <div>
+            <span class="label">Type</span>
+            <mat-chip>{{ account.type | titlecase }}</mat-chip>
+          </div>
+        </div>
+        <div class="detail">
+          <mat-icon>tag</mat-icon>
+          <div>
+            <span class="label">Account Number</span>
+            <span>{{ account.accountNumber }}</span>
+          </div>
+        </div>
+        <div class="detail">
+          <mat-icon>account_balance_wallet</mat-icon>
+          <div>
+            <span class="label">Balance</span>
+            <span class="balance" [class.negative]="account.balance < 0">{{ account.balance | currency }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="transactions-header">
+    <h2>Transactions</h2>
+    <button mat-flat-button (click)="addTransaction()">
+      <mat-icon>add</mat-icon> New Transaction
+    </button>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      @if (transactions.length === 0) {
+        <p class="empty">No transactions yet.</p>
+      } @else {
+        <table mat-table [dataSource]="transactions" class="transactions-table">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let t">{{ t.date | date:'mediumDate' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let t">{{ t.description }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let t" [class.positive]="t.amount > 0" [class.negative]="t.amount < 0">
+              {{ t.amount | currency }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let t">
+              <button mat-icon-button color="warn" (click)="deleteTransaction(t)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+}

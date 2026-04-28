@@ -1,0 +1,75 @@
+h1 {
+  margin-top: 0;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.summary-cards {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  flex: 1;
+  min-width: 200px;
+
+  mat-card-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+.card-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: var(--mat-sys-primary);
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-label {
+  font-size: 14px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.card-value {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.transactions-card {
+  max-width: 800px;
+
+  mat-card-header {
+    display: flex;
+    align-items: center;
+  }
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.transactions-table {
+  width: 100%;
+}
+
+.positive {
+  color: var(--mat-sys-primary);
+}
+
+.negative {
+  color: var(--mat-sys-error);
+}

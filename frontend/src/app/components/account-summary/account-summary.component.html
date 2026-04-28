@@ -1,0 +1,52 @@
+@if (loading) {
+  <div class="loading">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+} @else {
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Account Summary</mat-card-title>
+      <mat-card-subtitle>All accounts overview</mat-card-subtitle>
+    </mat-card-header>
+
+    <div class="toolbar">
+      <button
+        mat-stroked-button
+        class="sort-button"
+        (click)="cycleSortMode()">
+        <mat-icon>{{ getSortIcon() }}</mat-icon>
+        {{ getSortLabel() }}
+      </button>
+      <mat-form-field class="filter-select" appearance="outline" subscriptSizing="dynamic">
+        <mat-select [value]="activeFilter" (selectionChange)="setFilter($event.value)">
+          @for (filter of filterOptions; track filter) {
+            <mat-option [value]="filter">{{ filter === 'all' ? 'All Types' : (filter | titlecase) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-card-content>
+      <mat-list>
+        @for (account of displayedAccounts; track account.id) {
+          <mat-list-item>
+            <mat-icon matListItemIcon>{{ getAccountIcon(account.type) }}</mat-icon>
+            <span matListItemTitle>{{ account.name }}</span>
+            <span matListItemLine>{{ account.accountNumber }} &middot; {{ account.type | titlecase }}</span>
+            <span matListItemMeta [class.negative]="account.balance < 0">
+              {{ account.balance | currency }}
+            </span>
+          </mat-list-item>
+        }
+      </mat-list>
+
+      <mat-divider></mat-divider>
+
+      <div class="total-row">
+        <strong>Total Balance</strong>
+        <strong class="total-amount">{{ totalBalance | currency }}</strong>
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+}

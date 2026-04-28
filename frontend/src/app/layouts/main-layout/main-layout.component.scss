@@ -1,0 +1,61 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  gap: 8px;
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+}
+
+.toolbar-title {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.sidenav-container {
+  flex: 1;
+}
+
+.sidenav {
+  width: 240px;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+}
+
+.content {
+  padding: 24px;
+}
+
+.active-link {
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.user-button {
+  color: var(--mat-sys-on-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-name {
+  margin: 0 4px;
+  font-weight: 500;
+}
+
+.user-menu-header {
+  opacity: 0.7;
+}
+
+.user-email {
+  font-size: 13px;
+}

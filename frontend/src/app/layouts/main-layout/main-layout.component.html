@@ -1,0 +1,50 @@
+<div class="app-container">
+  <mat-toolbar color="primary" class="toolbar">
+    <mat-icon>account_balance</mat-icon>
+    <span class="toolbar-title">Angular Bank</span>
+    <span class="toolbar-spacer"></span>
+    @if (user(); as currentUser) {
+      <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
+        <mat-icon>person</mat-icon>
+        <span class="user-name">{{ currentUser.name }}</span>
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <div class="user-menu-header" mat-menu-item disabled>
+          <div class="user-email">{{ currentUser.email }}</div>
+        </div>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Sign Out</span>
+        </button>
+      </mat-menu>
+    }
+  </mat-toolbar>
+
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav mode="side" opened class="sidenav">
+      <mat-nav-list>
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>dashboard</mat-icon>
+          <span matListItemTitle>Dashboard</span>
+        </a>
+        <a mat-list-item routerLink="/accounts" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>account_balance_wallet</mat-icon>
+          <span matListItemTitle>Accounts</span>
+        </a>
+        <a mat-list-item routerLink="/iframe-host" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>web</mat-icon>
+          <span matListItemTitle>Iframe Demo</span>
+        </a>
+        <a mat-list-item routerLink="/cross-origin-iframe" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>open_in_new</mat-icon>
+          <span matListItemTitle>Cross-Origin Iframe</span>
+        </a>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="content">
+      <router-outlet />
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embedded App - Cross-Origin RUM Demo</title>
+  <style>
+    :root {
+      --primary: #6750a4;
+      --primary-light: #e8def8;
+      --surface: #fffbfe;
+      --surface-variant: #e7e0ec;
+      --on-surface: #1c1b1f;
+      --on-surface-variant: #49454f;
+      --outline: #79747e;
+      --outline-variant: #cac4d0;
+      --error: #b3261e;
+      --success: #2e7d32;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--surface);
+      color: var(--on-surface);
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--on-surface-variant);
+      margin-bottom: 20px;
+    }
+
+    .rum-status {
+      background: var(--surface-variant);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rum-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+    }
+
+    .rum-status.error .dot {
+      background: var(--error);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .toolbar label {
+      font-size: 13px;
+      color: var(--on-surface-variant);
+      margin-right: 4px;
+    }
+
+    select {
+      padding: 6px 10px;
+      border: 1px solid var(--outline-variant);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--on-surface);
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: -1px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-outlined {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--outline);
+    }
+
+    .btn-outlined:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-rum {
+      background: #d32f2f;
+      color: #fff;
+      font-weight: 600;
+      padding: 10px 24px;
+      font-size: 14px;
+    }
+
+    .btn-rum:hover {
+      background: #b71c1c;
+      box-shadow: 0 2px 6px rgba(211, 47, 47, 0.4);
+    }
+
+    .accounts-section h2 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--on-surface-variant);
+    }
+
+    .error-msg {
+      background: #fce4ec;
+      color: var(--error);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 500;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--on-surface-variant);
+      border-bottom: 2px solid var(--outline-variant);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--outline-variant);
+      transition: background 0.1s;
+    }
+
+    tbody tr:hover {
+      background: var(--primary-light);
+    }
+
+    tbody td {
+      padding: 10px 12px;
+    }
+
+    .amount {
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+
+    .amount.positive {
+      color: var(--success);
+    }
+
+    .type-chip {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--surface-variant);
+      color: var(--on-surface-variant);
+    }
+
+    .summary {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .summary-card {
+      flex: 1;
+      min-width: 160px;
+      background: var(--surface-variant);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+
+    .summary-card .label {
+      font-size: 12px;
+      color: var(--on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .summary-card .value {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .action-log {
+      margin-top: 20px;
+      border-top: 1px solid var(--outline-variant);
+      padding-top: 16px;
+    }
+
+    .action-log h3 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--on-surface-variant);
+    }
+
+    .log-entries {
+      max-height: 120px;
+      overflow-y: auto;
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: var(--on-surface-variant);
+    }
+
+    .log-entries .entry {
+      padding: 3px 0;
+      border-bottom: 1px solid var(--outline-variant);
+    }
+
+    .log-entries .entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-entries .timestamp {
+      color: var(--outline);
+      margin-right: 8px;
+    }
+
+    .empty-log {
+      font-size: 12px;
+      color: var(--outline);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Account Explorer</h1>
+    <span class="badge">Cross-Origin App</span>
+  </div>
+  <p class="subtitle">
+    Standalone app running on port 4201 &mdash; embedded via iframe for cross-origin RUM session stitching.
+  </p>
+
+  <div id="rumStatus" class="rum-status">
+    <span class="dot"></span>
+    <span id="rumStatusText">Initializing Datadog RUM...</span>
+  </div>
+
+  <div class="toolbar">
+    <label for="typeFilter">Filter by type:</label>
+    <select id="typeFilter" onchange="applyFilter()">
+      <option value="all">All Types</option>
+    </select>
+
+    <label for="sortBy">Sort by:</label>
+    <select id="sortBy" onchange="applySort()">
+      <option value="name">Name</option>
+      <option value="balance-desc">Balance (High to Low)</option>
+      <option value="balance-asc">Balance (Low to High)</option>
+      <option value="type">Account Type</option>
+    </select>
+
+    <button class="btn btn-outlined" onclick="resetFilters()">Reset Filters</button>
+    <button class="btn btn-rum" onclick="sendCustomAction()">Send RUM Action</button>
+  </div>
+
+  <div class="accounts-section">
+    <h2>Accounts</h2>
+    <div id="accountsContainer">
+      <div class="loading">Loading accounts...</div>
+    </div>
+  </div>
+
+  <div class="action-log">
+    <h3>User Interaction Log</h3>
+    <div id="logEntries" class="log-entries">
+      <div class="empty-log">No interactions recorded yet.</div>
+    </div>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

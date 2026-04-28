@@ -1,59 +1,159 @@
-# SampleApp
+# Angular Bank - Datadog RUM Sample App
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+A full-stack banking sample application demonstrating Datadog Real User Monitoring (RUM) with iframe session stitching, user context tracking, and trace header injection.
 
-## Development server
+## Architecture
 
-To start a local development server, run:
+| Component | Tech Stack | Port |
+|-----------|-----------|------|
+| **Frontend** | Angular 21, Angular Material, TypeScript | 4200 |
+| **Backend** | Spring Boot 3.4, Java 17, H2 (in-memory) | 8080 |
+| **Embedded App** | Vanilla JS, Vite, `@datadog/browser-rum` (npm) | 4201 |
 
-```bash
-ng serve
-```
+## Features
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### Banking App
+- **Dashboard** with account summary and recent transactions
+- **Accounts** CRUD with transaction management
+- **User authentication** (JWT) with login/register
+- **Per-user data isolation** — each user only sees their own accounts and transactions
 
-## Code scaffolding
+### Datadog RUM
+- **RUM SDK** integrated in both parent app and iframes via npm (`@datadog/browser-rum`)
+- **Iframe Demo** (Case A) — Same-origin iframe loading an Angular route. RUM initializes automatically since both parent and iframe run the same Angular app.
+- **Cross-Origin Iframe** (Case B) — Separate app on a different port. Both apps use `trackSessionAcrossSubdomains: true` to share the RUM session cookie across the origin boundary.
+- **RUM + Traces** — `allowedTracingUrls` configured to inject `tracecontext` and `datadog` trace headers into API requests
+- **Session Replay** — `defaultPrivacyLevel: 'mask-user-input'` masks form inputs in replays
+- **User context** — `datadogRum.setUser()` called on login with `id`, `name`, `email`, and custom `user_type` attribute. `clearUser()` called on logout.
+- **Dynamic `user_type`** — Set to `'high_net_worth'` when total balance >= $100K, otherwise `'low_net_worth'`. Updates automatically as balance changes.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Quick Start
 
-```bash
-ng generate component component-name
-```
+### Prerequisites
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- Node.js 20+ and npm
+- Java 17+
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### Install Dependencies
 
 ```bash
-ng test
+cd frontend && npm install
+cd ../embedded-app && npm install
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+### Run All Services
 
 ```bash
-ng e2e
+./start.sh
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+This starts all three services. Press `Ctrl+C` to stop.
 
-## Additional Resources
+Or run individually:
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+```bash
+# Terminal 1: Backend
+cd backend && ./gradlew bootRun
+
+# Terminal 2: Frontend
+cd frontend && npm start
+
+# Terminal 3: Embedded App
+cd embedded-app && npm run dev
+```
+
+### Access the App
+
+- **App**: http://localhost:4200
+- **Seed user**: `demo@angularbank.com` / `password123` (has 5 pre-loaded accounts)
+- **New users**: Register via the app (start with 0 accounts)
+
+## Project Structure
+
+```
+.
+├── backend/                        # Spring Boot REST API
+│   └── src/main/java/com/angularbank/api/
+│       ├── config/                 # Security, JWT, error handling
+│       ├── controller/             # Auth, Account, Transaction endpoints
+│       ├── dto/                    # Request/response DTOs with validation
+│       ├── model/                  # JPA entities (User, Account, Transaction)
+│       ├── repository/             # Spring Data JPA repositories
+│       └── service/                # Business logic with per-user scoping
+├── frontend/                       # Angular SPA
+│   └── src/
+│       ├── main.ts                 # RUM initialization
+│       ├── environments/           # Dev/prod Datadog config
+│       └── app/
+│           ├── components/         # Shared components (dialogs, account summary)
+│           ├── guards/             # Auth guard
+│           ├── interceptors/       # Auth token + error handling interceptors
+│           ├── layouts/            # Main layout (sidebar) + embedded layout
+│           ├── models/             # TypeScript interfaces
+│           ├── pages/              # Dashboard, Accounts, Login, Register, Iframe pages
+│           ├── pipes/              # SafeUrl pipe
+│           ├── services/           # Account API + Auth services
+│           └── utils/              # Shared utilities
+├── embedded-app/                   # Standalone app for cross-origin iframe demo
+│   ├── index.html                  # UI with filter, sort, and RUM action buttons
+│   ├── main.js                     # RUM init via npm + app logic
+│   └── package.json
+├── start.sh                        # Starts all 3 services
+└── README.md
+```
+
+## Datadog RUM Configuration
+
+Both apps initialize RUM with matching configuration:
+
+```javascript
+datadogRum.init({
+  applicationId: '...',
+  clientToken: '...',
+  trackSessionAcrossSubdomains: true,
+  defaultPrivacyLevel: 'mask-user-input',
+  allowedTracingUrls: [
+    { match: '...', propagatorTypes: ['tracecontext', 'datadog'] }
+  ],
+});
+```
+
+### User Context
+
+On login, the app sets user info on the RUM session:
+
+```javascript
+datadogRum.setUser({
+  id: '1',
+  name: 'Demo User',
+  email: 'demo@angularbank.com',
+  user_type: 'low_net_worth'  // or 'high_net_worth' when balance >= $100K
+});
+```
+
+The `user_type` attribute updates dynamically as the user's total account balance changes.
+
+### Iframe Session Stitching
+
+- **Case A (Same Origin)**: The "Iframe Demo" tab loads `/embedded/account-summary` from the same Angular app. `main.ts` runs again inside the iframe, so RUM initializes identically. Cookies are shared automatically.
+
+- **Case B (Cross-Origin)**: The "Cross-Origin Iframe" tab embeds a separate app from `http://localhost:4201`. Both apps use `trackSessionAcrossSubdomains: true` to share the session cookie across the origin boundary. The JWT token is passed via URL query parameter for API authentication.
+
+## API Endpoints
+
+All endpoints except `/api/auth/**` require a JWT token in the `Authorization: Bearer` header.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login, returns JWT |
+| GET | `/api/accounts` | List current user's accounts |
+| GET | `/api/accounts/summary` | Current user's total balance + count |
+| GET | `/api/accounts/:id` | Single account (must be owned by user) |
+| POST | `/api/accounts` | Create account for current user |
+| PUT | `/api/accounts/:id` | Update account |
+| DELETE | `/api/accounts/:id` | Delete account + its transactions |
+| GET | `/api/transactions` | Current user's recent transactions |
+| GET | `/api/transactions/account/:id` | Transactions by account (ownership verified) |
+| POST | `/api/transactions` | Create transaction |
+| DELETE | `/api/transactions/:id` | Delete transaction |

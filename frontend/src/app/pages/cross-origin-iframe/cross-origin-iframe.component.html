@@ -1,0 +1,17 @@
+<h1>Cross-Origin Iframe Demo</h1>
+
+<p class="subtitle">
+  This page embeds a separate app running on <strong>{{ rawUrl }}</strong> inside an iframe.
+  Both apps initialize Datadog RUM with matching configuration and
+  <strong>trackSessionAcrossSubdomains</strong> enabled, allowing sessions to be stitched across the iframe boundary.
+</p>
+
+<mat-card class="iframe-card">
+  <mat-card-header>
+    <mat-card-title>Embedded External App</mat-card-title>
+    <mat-card-subtitle>Loaded via iframe from {{ rawUrl }}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <iframe [src]="iframeUrl" class="embedded-iframe" title="Cross-Origin Embedded App"></iframe>
+  </mat-card-content>
+</mat-card>

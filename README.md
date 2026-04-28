@@ -34,12 +34,20 @@ A full-stack banking sample application demonstrating Datadog Real User Monitori
 - Node.js 20+ and npm
 - Java 17+
 
-### Install Dependencies
+### Configure Datadog RUM
 
-```bash
-cd frontend && npm install
-cd ../embedded-app && npm install
+Replace the placeholders in these files with your Datadog RUM application ID and client token:
+
+- `frontend/src/environments/environment.ts` (development)
+- `frontend/src/environments/environment.production.ts` (production)
+- `embedded-app/main.js`
+
 ```
+applicationId: '<YOUR_APPLICATION_ID>'
+clientToken: '<YOUR_CLIENT_TOKEN>'
+```
+
+You can find these values in **Datadog > Digital Experience > Add an Application**.
 
 ### Run All Services
 

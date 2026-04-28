@@ -1,8 +1,8 @@
 export const environment = {
   production: false,
   datadog: {
-    applicationId: '7c2a1106-78db-4481-a28f-b66f752cdfc3',
-    clientToken: 'pub17dcc826a24006a9628a2c6c082e3709',
+    applicationId: '<YOUR_APPLICATION_ID>',
+    clientToken: '<YOUR_CLIENT_TOKEN>',
     site: 'datadoghq.com',
     service: 'sample-app',
     env: 'development',

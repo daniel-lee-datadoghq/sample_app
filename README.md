@@ -10,6 +10,66 @@ A full-stack banking sample application demonstrating Datadog Real User Monitori
 | **Backend** | Spring Boot 3.4, Java 17, H2 (in-memory) | 8080 |
 | **Embedded App** | Vanilla JS, Vite, `@datadog/browser-rum` (npm) | 4201 |
 
+## Quick Start
+
+### Prerequisites
+
+- Node.js 20+ and npm
+- Java 17+
+
+### 1. Clone the repo
+
+```bash
+git clone <repo-url>
+cd angular-bank-sample-app
+```
+
+### 2. Configure Datadog RUM
+
+Replace the placeholders with your Datadog RUM application ID and client token in these three files:
+
+| File | Used by |
+|------|---------|
+| `frontend/src/environments/environment.ts` | Angular app (dev) |
+| `frontend/src/environments/environment.production.ts` | Angular app (prod) |
+| `embedded-app/main.js` | Cross-origin iframe app |
+
+```
+applicationId: '<YOUR_APPLICATION_ID>'
+clientToken: '<YOUR_CLIENT_TOKEN>'
+```
+
+You can find these values in **Datadog > Digital Experience > Add an Application**.
+
+### 3. Start the app
+
+```bash
+./start.sh
+```
+
+This will install npm dependencies, start all three services, and wait for the backend before launching the frontend. Press `Ctrl+C` to stop everything.
+
+### 4. Open the app
+
+- **URL**: http://localhost:4200
+- **Seed user**: `demo@angularbank.com` / `password123` (has 5 pre-loaded accounts)
+- **New users**: Register via the app (start with 0 accounts)
+
+### Running services individually
+
+If you prefer to run each service in its own terminal:
+
+```bash
+# Terminal 1: Backend
+cd backend && ./gradlew bootRun
+
+# Terminal 2: Frontend
+cd frontend && npm install && npm start
+
+# Terminal 3: Embedded App
+cd embedded-app && npm install && npm run dev
+```
+
 ## Features
 
 ### Banking App
@@ -26,55 +86,6 @@ A full-stack banking sample application demonstrating Datadog Real User Monitori
 - **Session Replay** — `defaultPrivacyLevel: 'mask-user-input'` masks form inputs in replays
 - **User context** — `datadogRum.setUser()` called on login with `id`, `name`, `email`, and custom `user_type` attribute. `clearUser()` called on logout.
 - **Dynamic `user_type`** — Set to `'high_net_worth'` when total balance >= $100K, otherwise `'low_net_worth'`. Updates automatically as balance changes.
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 20+ and npm
-- Java 17+
-
-### Configure Datadog RUM
-
-Replace the placeholders in these files with your Datadog RUM application ID and client token:
-
-- `frontend/src/environments/environment.ts` (development)
-- `frontend/src/environments/environment.production.ts` (production)
-- `embedded-app/main.js`
-
-```
-applicationId: '<YOUR_APPLICATION_ID>'
-clientToken: '<YOUR_CLIENT_TOKEN>'
-```
-
-You can find these values in **Datadog > Digital Experience > Add an Application**.
-
-### Run All Services
-
-```bash
-./start.sh
-```
-
-This starts all three services. Press `Ctrl+C` to stop.
-
-Or run individually:
-
-```bash
-# Terminal 1: Backend
-cd backend && ./gradlew bootRun
-
-# Terminal 2: Frontend
-cd frontend && npm start
-
-# Terminal 3: Embedded App
-cd embedded-app && npm run dev
-```
-
-### Access the App
-
-- **App**: http://localhost:4200
-- **Seed user**: `demo@angularbank.com` / `password123` (has 5 pre-loaded accounts)
-- **New users**: Register via the app (start with 0 accounts)
 
 ## Project Structure
 
@@ -106,7 +117,7 @@ cd embedded-app && npm run dev
 │   ├── index.html                  # UI with filter, sort, and RUM action buttons
 │   ├── main.js                     # RUM init via npm + app logic
 │   └── package.json
-├── start.sh                        # Starts all 3 services
+├── start.sh                        # Installs deps + starts all 3 services
 └── README.md
 ```
 

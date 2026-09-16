@@ -1,0 +1,324 @@
+$positive: #1b7f4b;
+$caution: #b3541e;
+
+.analyst {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  grid-template-areas:
+    'consensus distribution'
+    'consensus targets'
+    'actions actions'
+    'fine fine';
+  gap: 20px 28px;
+  align-items: start;
+}
+
+.section-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 12px
+  ;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.consensus-card {
+  grid-area: consensus;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  background-color: var(--mat-sys-surface-container-low);
+}
+
+.consensus-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.count {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.consensus-value {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  &.strong-buy,
+  &.buy {
+    color: $positive;
+  }
+
+  &.hold {
+    color: var(--mat-sys-on-surface);
+  }
+
+  &.underperform,
+  &.sell {
+    color: var(--mat-sys-error);
+  }
+}
+
+.consensus-score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.info {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--mat-sys-primary);
+  cursor: help;
+}
+
+.morningstar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+.stars {
+  display: inline-flex;
+  color: #c8891f;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.distribution {
+  grid-area: distribution;
+}
+
+.bucket {
+  display: grid;
+  grid-template-columns: 96px 1fr 28px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background-color: var(--mat-sys-surface-container-high);
+  overflow: hidden;
+}
+
+.bar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--mat-sys-primary);
+  transition: width 240ms ease;
+
+  &.strong-buy {
+    background-color: $positive;
+  }
+
+  &.buy {
+    background-color: #4fa06f;
+  }
+
+  &.hold {
+    background-color: #9aa0a6;
+  }
+
+  &.underperform {
+    background-color: $caution;
+  }
+
+  &.sell {
+    background-color: var(--mat-sys-error);
+  }
+}
+
+.bucket-count {
+  text-align: right;
+  font-weight: 600;
+}
+
+.targets {
+  grid-area: targets;
+}
+
+.target-figures {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mean {
+    align-items: center;
+  }
+
+  .right {
+    align-items: flex-end;
+  }
+}
+
+.figure-label {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.figure {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.upside {
+  font-size: 11px;
+  font-weight: 600;
+  color: $positive;
+
+  &.down {
+    color: var(--mat-sys-error);
+  }
+}
+
+.target-scale {
+  position: relative;
+  height: 24px;
+  margin-top: 10px;
+}
+
+.scale-track {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--mat-sys-surface-container-high), var(--mat-sys-secondary-container));
+}
+
+.marker {
+  position: absolute;
+  top: 4px;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  border-radius: 2px;
+
+  &.target {
+    background-color: var(--mat-sys-primary);
+  }
+
+  &.last {
+    background-color: #1b1b1b;
+  }
+}
+
+.scale-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  border-radius: 2px;
+
+  &.target {
+    background-color: var(--mat-sys-primary);
+  }
+
+  &.last {
+    background-color: #1b1b1b;
+  }
+}
+
+.actions {
+  grid-area: actions;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th,
+td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.numeric {
+  text-align: right;
+}
+
+.action-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: rgb(27 127 75 / 12%);
+  color: $positive;
+
+  &.negative {
+    background-color: rgb(179 84 30 / 14%);
+    color: $caution;
+  }
+}
+
+.fine-print {
+  grid-area: fine;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+@media (max-width: 900px) {
+  .analyst {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'consensus'
+      'distribution'
+      'targets'
+      'actions'
+      'fine';
+  }
+}

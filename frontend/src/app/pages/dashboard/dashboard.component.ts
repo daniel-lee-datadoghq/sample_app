@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,7 +37,16 @@ export class DashboardComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    // Reload whenever account data is written anywhere, including from the trade overlay.
+    let seenVersion = this.api.dataVersion();
+    effect(() => {
+      const version = this.api.dataVersion();
+      if (version === seenVersion) return;
+      seenVersion = version;
+      this.loadData();
+    });
+  }
 
   ngOnInit(): void {
     this.loadData();
@@ -73,7 +82,6 @@ export class DashboardComponent implements OnInit {
       if (result) {
         this.api.createTransaction(result).subscribe(() => {
           this.snackBar.open('Transaction added', 'Close', { duration: 3000 });
-          this.loadData();
         });
       }
     });

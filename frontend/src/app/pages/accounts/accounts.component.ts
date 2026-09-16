@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CurrencyPipe, TitleCasePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -39,7 +39,16 @@ export class AccountsComponent implements OnInit {
     private snackBar: MatSnackBar,
     private router: Router,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    // Reload whenever account data is written anywhere, including from the trade overlay.
+    let seenVersion = this.api.dataVersion();
+    effect(() => {
+      const version = this.api.dataVersion();
+      if (version === seenVersion) return;
+      seenVersion = version;
+      this.loadAccounts();
+    });
+  }
 
   ngOnInit(): void {
     this.loadAccounts();
@@ -76,7 +85,6 @@ export class AccountsComponent implements OnInit {
       if (result) {
         this.api.createAccount(result).subscribe(() => {
           this.snackBar.open('Account created', 'Close', { duration: 3000 });
-          this.loadAccounts();
         });
       }
     });
@@ -89,7 +97,6 @@ export class AccountsComponent implements OnInit {
       if (result) {
         this.api.updateAccount(account.id, result).subscribe(() => {
           this.snackBar.open('Account updated', 'Close', { duration: 3000 });
-          this.loadAccounts();
         });
       }
     });
@@ -104,7 +111,6 @@ export class AccountsComponent implements OnInit {
       if (confirmed) {
         this.api.deleteAccount(account.id).subscribe(() => {
           this.snackBar.open('Account deleted', 'Close', { duration: 3000 });
-          this.loadAccounts();
         });
       }
     });

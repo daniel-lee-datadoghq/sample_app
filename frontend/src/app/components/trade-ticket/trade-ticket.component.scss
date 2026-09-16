@@ -1,0 +1,463 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.quote-clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+  background-color: var(--mat-sys-surface-container);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.refresh {
+  --mat-icon-button-state-layer-size: 32px;
+  color: var(--mat-sys-primary);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.ticket-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.funding,
+.order {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.info {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--mat-sys-primary);
+  cursor: help;
+}
+
+.figure-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+
+  &.muted {
+    font-weight: 400;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.skeleton-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton {
+  height: 12px;
+  width: 60%;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--mat-sys-surface-container) 25%,
+    var(--mat-sys-surface-container-high) 37%,
+    var(--mat-sys-surface-container) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+
+  &.wide {
+    width: 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+.segmented {
+  display: flex;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--mat-sys-surface-container-low);
+}
+
+.segment {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 4px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:not(:last-child) {
+    border-right: 1px solid var(--mat-sys-outline-variant);
+  }
+
+  &:hover:not(:disabled):not(.selected) {
+    background-color: var(--mat-sys-surface-container-high);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &.selected {
+    background-color: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
+    box-shadow: inset 0 -2px 0 var(--mat-sys-primary);
+  }
+}
+
+.price-types .segment {
+  // Size to content so "Trailing stop limit" is not truncated, then share the slack.
+  flex: 1 1 auto;
+  padding: 9px 8px;
+  font-size: 11px;
+}
+
+.side .segment {
+  padding: 11px 4px;
+  font-size: 14px;
+
+  &.buy.selected {
+    background-color: #1b7f4b;
+    color: #fff;
+    box-shadow: none;
+  }
+
+  &.sell.selected {
+    background-color: var(--mat-sys-error);
+    color: var(--mat-sys-on-error);
+    box-shadow: none;
+  }
+}
+
+.symbol-field {
+  mat-icon[matPrefix] {
+    margin-right: 6px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.option-symbol {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.option-name {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.quote {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quote-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quote-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.research {
+  --mat-icon-button-state-layer-size: 32px;
+  color: var(--mat-sys-primary);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.quote-last {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 6px;
+}
+
+.last {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.ccy {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.change {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1b7f4b;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &.down {
+    color: var(--mat-sys-error);
+  }
+}
+
+.quote-book {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.book-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 6px;
+
+  &.bid {
+    color: #1b7f4b;
+  }
+
+  &.ask {
+    color: #b3541e;
+  }
+}
+
+.book-label {
+  font-size: 11px;
+}
+
+.book-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.quote-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.stat-value {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.holding {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    flex: none;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.show-toggle {
+  align-self: center;
+  font-size: 12px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.more-info {
+  justify-content: flex-end;
+}
+
+.fractional-chip {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.quantity-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  // The unit suffix does the labelling; spinners would collide with it.
+  input[type='number']::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+}
+
+.approx {
+  font-size: 16px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.prefix {
+  padding-right: 4px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.suffix {
+  padding-left: 4px;
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.link {
+  align-self: flex-start;
+  padding: 0 4px;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.quote-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--mat-sys-error);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.ticket-footer {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-surface);
+  padding: 10px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footer-error {
+  align-self: center;
+  font-size: 11px;
+  color: var(--mat-sys-error);
+}
+
+.footer-summary {
+  align-self: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b7f4b;
+
+  &.sell {
+    color: var(--mat-sys-error);
+  }
+}
+
+.footer-expiry {
+  align-self: center;
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.footer-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+
+  button {
+    flex: 1;
+  }
+
+  .review {
+    flex: 2;
+  }
+}

@@ -71,9 +71,16 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let t">
-              <button mat-icon-button color="warn" (click)="deleteTransaction(t)">
-                <mat-icon>delete</mat-icon>
-              </button>
+              @if (t.symbol) {
+                <!-- Trade settlements are reversed by placing an offsetting order, not by deleting. -->
+                <mat-icon class="settlement-icon" matTooltip="Trade settlement for {{ t.symbol }}">
+                  trending_up
+                </mat-icon>
+              } @else {
+                <button mat-icon-button color="warn" (click)="deleteTransaction(t)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
             </td>
           </ng-container>
 

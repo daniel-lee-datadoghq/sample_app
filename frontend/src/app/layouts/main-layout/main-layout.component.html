@@ -3,6 +3,7 @@
     <mat-icon>account_balance</mat-icon>
     <span class="toolbar-title">Angular Bank</span>
     <span class="toolbar-spacer"></span>
+    <app-research-search />
     @if (user(); as currentUser) {
       <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
         <mat-icon>person</mat-icon>
@@ -47,4 +48,10 @@
       <router-outlet />
     </mat-sidenav-content>
   </mat-sidenav-container>
+
+  <!-- Non-modal trade rail: overlays every page without a route change. -->
+  <app-trade-rail />
+
+  <!-- Quotes & Research overlay, opened from the toolbar search or a symbol row. -->
+  <app-qr-widget />
 </div>

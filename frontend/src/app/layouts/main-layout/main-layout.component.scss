@@ -29,6 +29,8 @@
 
 .content {
   padding: 24px;
+  // Leave room for the fixed trade rail on the right edge.
+  padding-right: 88px;
 }
 
 .active-link {
@@ -38,6 +40,10 @@
 
 .toolbar-spacer {
   flex: 1 1 auto;
+}
+
+app-research-search {
+  margin-right: 16px;
 }
 
 .user-button {

@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { Account, Transaction } from '../models/account.model';
+import { OrderResult, PlaceOrderRequest, Position } from '../models/trade.model';
 
 export interface CreateAccountRequest {
   name: string;
@@ -27,6 +28,14 @@ export interface AccountSummary {
 export class AccountApiService {
   private readonly baseUrl = '/api';
 
+  private readonly mutations = signal(0);
+
+  /**
+   * Bumped by every write. Pages watch it so an order placed from the trade overlay is
+   * reflected on the page underneath without a route change or manual refresh.
+   */
+  readonly dataVersion = this.mutations.asReadonly();
+
   constructor(private http: HttpClient) {}
 
   getAccounts(): Observable<Account[]> {
@@ -38,15 +47,15 @@ export class AccountApiService {
   }
 
   createAccount(request: CreateAccountRequest): Observable<Account> {
-    return this.http.post<Account>(`${this.baseUrl}/accounts`, request);
+    return this.http.post<Account>(`${this.baseUrl}/accounts`, request).pipe(this.trackMutation());
   }
 
   updateAccount(id: number, request: Partial<CreateAccountRequest>): Observable<Account> {
-    return this.http.put<Account>(`${this.baseUrl}/accounts/${id}`, request);
+    return this.http.put<Account>(`${this.baseUrl}/accounts/${id}`, request).pipe(this.trackMutation());
   }
 
   deleteAccount(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/accounts/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/accounts/${id}`).pipe(this.trackMutation());
   }
 
   getAccountSummary(): Observable<AccountSummary> {
@@ -63,10 +72,24 @@ export class AccountApiService {
   }
 
   createTransaction(request: CreateTransactionRequest): Observable<Transaction> {
-    return this.http.post<Transaction>(`${this.baseUrl}/transactions`, request);
+    return this.http.post<Transaction>(`${this.baseUrl}/transactions`, request).pipe(this.trackMutation());
+  }
+
+  getPositions(): Observable<Position[]> {
+    return this.http.get<Position[]>(`${this.baseUrl}/positions`);
+  }
+
+  /** Settles an equity order: moves cash, records the transaction and updates the holding. */
+  placeOrder(request: PlaceOrderRequest): Observable<OrderResult> {
+    return this.http.post<OrderResult>(`${this.baseUrl}/orders`, request).pipe(this.trackMutation());
+  }
+
+  /** Signals watchers that server-side account data changed. */
+  private trackMutation<T>() {
+    return tap<T>(() => this.mutations.update((version) => version + 1));
   }
 
   deleteTransaction(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/transactions/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/transactions/${id}`).pipe(this.trackMutation());
   }
 }

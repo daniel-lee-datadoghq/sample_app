@@ -7,6 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from '../../services/auth.service';
+import { TradeRailComponent } from '../../components/trade-rail/trade-rail.component';
+import { QrWidgetComponent } from '../../components/qr-widget/qr-widget.component';
+import { ResearchSearchComponent } from '../../components/research-search/research-search.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -19,6 +22,9 @@ import { AuthService } from '../../services/auth.service';
     MatIconModule,
     MatButtonModule,
     MatMenuModule,
+    TradeRailComponent,
+    QrWidgetComponent,
+    ResearchSearchComponent,
   ],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',

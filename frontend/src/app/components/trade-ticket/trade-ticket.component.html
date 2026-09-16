@@ -1,0 +1,366 @@
+<div class="quote-clock">
+  <button mat-icon-button class="refresh" matTooltip="Refresh quote" (click)="store.refreshQuote()">
+    <mat-icon>refresh</mat-icon>
+  </button>
+  <span>As of {{ asOfEt }} ET</span>
+</div>
+
+<div class="ticket-body">
+  <section class="funding">
+    <div class="account-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
+        <mat-label>Choose an account</mat-label>
+        <mat-select
+          [value]="store.accountId()"
+          (valueChange)="store.accountId.set($event)"
+          [disabled]="store.accountsLoading()"
+        >
+          <mat-optgroup [label]="ownerName">
+            @for (account of store.accounts(); track account.id) {
+              <mat-option [value]="account.id">
+                {{ accountFlag(account) }} {{ accountLabel(account) }}
+              </mat-option>
+            }
+          </mat-optgroup>
+        </mat-select>
+      </mat-form-field>
+      <mat-icon
+        class="info"
+        matTooltip="Buying power is the settled cash available in the selected account."
+        >info_outline</mat-icon
+      >
+    </div>
+
+    @if (store.accountsLoading()) {
+      <div class="hint">Loading your accounts…</div>
+    } @else if (!store.accounts().length) {
+      <div class="hint">You have no accounts yet. Create one to start trading.</div>
+    } @else if (store.accountId() === null) {
+      <div class="hint">Select an account to see your buying power.</div>
+    } @else if (store.accountLoading()) {
+      <div class="skeleton-rows">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    } @else if (store.selectedAccount(); as account) {
+      <div class="figure-row">
+        <span>Buying power</span>
+        <strong>{{ account.balance | currency: account.currency }}</strong>
+      </div>
+      <div class="figure-row muted">
+        <span>Cash available</span>
+        <strong>{{ account.balance | currency: account.currency }}</strong>
+      </div>
+    }
+  </section>
+
+  <mat-divider />
+
+  <section class="order">
+    <div class="segmented side" role="group" aria-label="Order side">
+      <button
+        type="button"
+        class="segment buy"
+        [class.selected]="store.side() === 'buy'"
+        [attr.aria-pressed]="store.side() === 'buy'"
+        (click)="setSide('buy')"
+      >
+        Buy
+      </button>
+      <button
+        type="button"
+        class="segment sell"
+        [class.selected]="store.side() === 'sell'"
+        [attr.aria-pressed]="store.side() === 'sell'"
+        (click)="setSide('sell')"
+      >
+        Sell
+      </button>
+    </div>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="symbol-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        placeholder="Name or symbol"
+        [formControl]="symbolControl"
+        [matAutocomplete]="symbolAuto"
+        (keyup.enter)="commitTypedSymbol()"
+        (blur)="commitTypedSymbol()"
+      />
+      @if (searching()) {
+        <mat-spinner matSuffix diameter="18" />
+      }
+      <mat-autocomplete #symbolAuto (optionSelected)="onSymbolSelected($event.option.value)">
+        @for (match of matches(); track match.symbol) {
+          <mat-option [value]="match.symbol">
+            <span class="option-symbol">{{ flags[match.region] }} {{ match.symbol }}</span>
+            <span class="option-name">{{ match.name }}</span>
+          </mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    @if (store.quoteError(); as message) {
+      <div class="quote-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ message }}</span>
+      </div>
+    } @else if (!store.symbol()) {
+      <div class="hint">Search for a stock or ETF to see a live quote.</div>
+    } @else if (store.quoteLoading()) {
+      <div class="skeleton-rows">
+        <div class="skeleton wide"></div>
+        <div class="skeleton wide"></div>
+        <div class="skeleton"></div>
+      </div>
+    } @else if (store.quote(); as quote) {
+      <div class="quote">
+        <div class="quote-head">
+          <span class="quote-name">{{ flags[quote.region] }} {{ quote.name }}</span>
+          <button
+            mat-icon-button
+            class="research"
+            matTooltip="Quotes & research"
+            [attr.aria-label]="'Research ' + quote.symbol"
+            (click)="research.open(quote.symbol, 'trade_ticket')"
+          >
+            <mat-icon>insights</mat-icon>
+          </button>
+        </div>
+
+        <div class="quote-last">
+          <span class="last">{{ quote.last | number: '1.2-2' }}</span>
+          <span class="ccy">{{ quote.currency }}</span>
+          <span class="change" [class.down]="quote.change < 0">
+            <mat-icon>{{ quote.change < 0 ? 'south_east' : 'north_east' }}</mat-icon>
+            {{ absChange(quote.change) | number: '1.2-2' }} ({{ absChange(quote.changePercent) | number: '1.2-2' }}%)
+          </span>
+        </div>
+
+        <div class="quote-book">
+          <div class="book-cell bid">
+            <span class="book-label">Bid / Shares</span>
+            <span class="book-value">
+              {{ quote.bid | number: '1.2-2' }} / {{ quote.bidSize | number }}
+            </span>
+          </div>
+          <div class="book-cell ask">
+            <span class="book-label">Ask / Shares</span>
+            <span class="book-value">
+              {{ quote.ask | number: '1.2-2' }} / {{ quote.askSize | number }}
+            </span>
+          </div>
+        </div>
+
+        @if (store.quoteExpanded()) {
+          <div class="quote-stats">
+            <div>
+              <span class="stat-label">Volume</span>
+              <span class="stat-value">{{ quote.volume | number }}</span>
+            </div>
+            <div>
+              <span class="stat-label">Open</span>
+              <span class="stat-value">{{ quote.open | currency: quote.currency }}</span>
+            </div>
+            <div>
+              <span class="stat-label">Day range</span>
+              <span class="stat-value">
+                {{ quote.dayLow | currency: quote.currency }} - {{ quote.dayHigh | currency: quote.currency }}
+              </span>
+            </div>
+            <div>
+              <span class="stat-label">52 week range</span>
+              <span class="stat-value">
+                {{ quote.yearLow | currency: quote.currency }} - {{ quote.yearHigh | currency: quote.currency }}
+              </span>
+            </div>
+          </div>
+        }
+
+        @if (store.currentPosition(); as position) {
+          <div class="holding">
+            <mat-icon>donut_large</mat-icon>
+            <span>
+              You hold <strong>{{ formatShares(position.quantity) }}</strong> shares in this account
+              at {{ position.averageCost | currency: position.currency }} average cost
+            </span>
+          </div>
+        }
+
+        <button mat-button class="show-toggle" (click)="store.quoteExpanded.set(!store.quoteExpanded())">
+          {{ store.quoteExpanded() ? 'Show less' : 'Show more' }}
+          <mat-icon>{{ store.quoteExpanded() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+      </div>
+    }
+  </section>
+
+  <mat-divider />
+
+  <section class="order">
+    <div class="section-head">
+      <span class="section-label">Order price type</span>
+      <mat-icon class="info" matTooltip="Market fills at the next available price. Limit, stop and trailing orders fill only at your price.">info_outline</mat-icon>
+      @if (store.fractionalAllowed()) {
+        <span class="fractional-chip">Fractional</span>
+      }
+    </div>
+
+    <div class="segmented price-types" role="group" aria-label="Order price type">
+      @for (type of priceTypes; track type.value) {
+        <button
+          type="button"
+          class="segment"
+          [class.selected]="store.priceType() === type.value"
+          [attr.aria-pressed]="store.priceType() === type.value"
+          (click)="setPriceType(type.value)"
+        >
+          {{ type.label }}
+        </button>
+      }
+    </div>
+
+    <div class="quantity-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
+        <input
+          matInput
+          type="number"
+          min="0"
+          [step]="store.fractionalAllowed() ? 0.00001 : 1"
+          [value]="store.shares()"
+          (input)="onSharesInput($any($event.target).value)"
+          aria-label="Quantity in shares"
+        />
+        <span matSuffix class="suffix">Shares</span>
+      </mat-form-field>
+      <span class="approx" aria-hidden="true">&asymp;</span>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grow">
+        <span matPrefix class="prefix">$</span>
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="0.01"
+          [value]="store.amount()"
+          [disabled]="!store.fractionalAllowed()"
+          (input)="onAmountInput($any($event.target).value)"
+          aria-label="Quantity in dollars"
+        />
+        <span matSuffix class="suffix">{{ store.quote()?.currency ?? 'USD' }}</span>
+      </mat-form-field>
+    </div>
+
+    @if (!store.fractionalAllowed() && store.quote()) {
+      <div class="hint">Dollar-based quantities are available for fractional market orders only.</div>
+    }
+
+    @if (store.maxShares() > 0) {
+      <button mat-button class="link" (click)="store.useMaxShares()">
+        {{ store.side() === 'buy' ? 'Buy' : 'Sell' }} max ({{ formatShares(store.maxShares()) }} shares)
+      </button>
+    }
+
+    @if (store.priceType() === 'limit') {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Limit price</mat-label>
+        <span matPrefix class="prefix">$</span>
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="0.01"
+          [value]="store.limitPrice()"
+          (input)="onNumericInput('limitPrice', $any($event.target).value)"
+        />
+      </mat-form-field>
+    } @else if (store.priceType() === 'stop') {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Stop price</mat-label>
+        <span matPrefix class="prefix">$</span>
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="0.01"
+          [value]="store.stopPrice()"
+          (input)="onNumericInput('stopPrice', $any($event.target).value)"
+        />
+      </mat-form-field>
+    } @else if (store.priceType() === 'trailing-stop-limit') {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Trailing amount</mat-label>
+        <span matPrefix class="prefix">$</span>
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="0.01"
+          [value]="store.trailingAmount()"
+          (input)="onNumericInput('trailingAmount', $any($event.target).value)"
+        />
+      </mat-form-field>
+    }
+
+    <span class="section-label">Order expiry</span>
+    <div class="segmented" role="group" aria-label="Order expiry">
+      <button
+        type="button"
+        class="segment"
+        [class.selected]="store.expiry() === 'day'"
+        [attr.aria-pressed]="store.expiry() === 'day'"
+        (click)="setExpiry('day')"
+      >
+        Day
+      </button>
+      <button
+        type="button"
+        class="segment"
+        [class.selected]="store.expiry() === 'custom'"
+        [attr.aria-pressed]="store.expiry() === 'custom'"
+        [disabled]="store.priceType() === 'market'"
+        [matTooltip]="store.priceType() === 'market' ? 'Market orders expire at the end of the session.' : ''"
+        (click)="setExpiry('custom')"
+      >
+        Custom date
+      </button>
+    </div>
+
+    @if (store.expiry() === 'custom') {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Good until</mat-label>
+        <input
+          matInput
+          type="date"
+          [value]="store.expiryDate()"
+          (input)="store.expiryDate.set($any($event.target).value || null)"
+        />
+      </mat-form-field>
+    }
+
+    <div class="section-head more-info">
+      <span class="section-label">More Information</span>
+      <mat-icon
+        class="info"
+        matTooltip="Orders placed outside market hours are queued for the next session. Commission-free on U.S. and Canadian listed equities."
+        >info_outline</mat-icon
+      >
+    </div>
+  </section>
+</div>
+
+<footer class="ticket-footer">
+  @if (store.validationError(); as message) {
+    <div class="footer-error">{{ message }}</div>
+  }
+  <div class="footer-summary" [class.sell]="store.side() === 'sell'">
+    {{ store.summaryLine() }}
+  </div>
+  <div class="footer-expiry">{{ store.expiryLine() }}</div>
+  <div class="footer-actions">
+    <button mat-stroked-button (click)="store.clear()">Clear</button>
+    <button mat-flat-button class="review" [disabled]="!store.canReview()" (click)="review()">
+      Review
+    </button>
+  </div>
+</footer>

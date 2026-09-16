@@ -1,0 +1,145 @@
+@if (placed(); as confirmation) {
+  <h2 mat-dialog-title class="confirmed-title">
+    <mat-icon class="confirmed-icon">check_circle</mat-icon>
+    Order received
+  </h2>
+  <mat-dialog-content class="dialog-content">
+    <p class="confirmed-copy">
+      Your {{ draft.side }} order for
+      <strong>{{ formatShares(draft.shares) }} {{ draft.symbol }}</strong>
+      has been submitted to the market.
+    </p>
+    <div class="rows">
+      <div class="row">
+        <span>Confirmation number</span>
+        <strong>{{ confirmation.result.confirmationNumber }}</strong>
+      </div>
+      <div class="row">
+        <span>Submitted</span>
+        <strong>{{ confirmation.result.placedAt | date: 'medium' }}</strong>
+      </div>
+      <div class="row">
+        <span>Settled from</span>
+        <strong>{{ draft.accountLabel }}</strong>
+      </div>
+      <div class="row">
+        <span>{{ draft.side === 'buy' ? 'Amount debited' : 'Amount credited' }}</span>
+        <strong>{{ confirmation.result.netAmount | currency: draft.currency }}</strong>
+      </div>
+      <div class="row">
+        <span>Your position</span>
+        <strong>
+          @if (confirmation.result.position; as position) {
+            {{ formatShares(position.quantity) }} shares @
+            {{ position.averageCost | currency: position.currency }} avg
+          } @else {
+            Closed
+          }
+        </strong>
+      </div>
+    </div>
+    <p class="fine-print">
+      Executions can differ from the estimate shown. The settlement transaction is on your account
+      activity, and the holding is in your Positions panel.
+    </p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-flat-button (click)="done()">Done</button>
+  </mat-dialog-actions>
+} @else {
+  <h2 mat-dialog-title>Review your order</h2>
+  <mat-dialog-content class="dialog-content">
+    <div class="headline">
+      <span class="side-chip" [class.sell]="draft.side === 'sell'">{{ draft.side | titlecase }}</span>
+      <div>
+        <div class="headline-symbol">{{ draft.symbol }}</div>
+        <div class="headline-name">{{ draft.name }}</div>
+      </div>
+    </div>
+
+    <div class="rows">
+      <div class="row">
+        <span>Account</span>
+        <strong>{{ draft.accountLabel }}</strong>
+      </div>
+      <div class="row">
+        <span>Order price type</span>
+        <strong>{{ priceTypeLabel }}</strong>
+      </div>
+      <div class="row">
+        <span>Quantity</span>
+        <strong>{{ formatShares(draft.shares) }} shares</strong>
+      </div>
+      @if (draft.limitPrice) {
+        <div class="row">
+          <span>Limit price</span>
+          <strong>{{ draft.limitPrice | currency: draft.currency }}</strong>
+        </div>
+      }
+      @if (draft.stopPrice) {
+        <div class="row">
+          <span>Stop price</span>
+          <strong>{{ draft.stopPrice | currency: draft.currency }}</strong>
+        </div>
+      }
+      @if (draft.trailingAmount) {
+        <div class="row">
+          <span>Trailing amount</span>
+          <strong>{{ draft.trailingAmount | currency: draft.currency }}</strong>
+        </div>
+      }
+      <div class="row">
+        <span>Estimated price</span>
+        <strong>{{ draft.estimatedPrice | currency: draft.currency }}</strong>
+      </div>
+      <div class="row">
+        <span>Order expiry</span>
+        <strong>{{ expiryLabel }}</strong>
+      </div>
+    </div>
+
+    <mat-divider />
+
+    <div class="rows">
+      <div class="row">
+        <span>Estimated value</span>
+        <strong>{{ draft.estimatedValue | currency: draft.currency }}</strong>
+      </div>
+      <div class="row">
+        <span>Commission</span>
+        <strong>{{ draft.commission | currency: draft.currency }}</strong>
+      </div>
+      <div class="row total">
+        <span>Estimated total</span>
+        <strong>{{ draft.estimatedTotal | currency: draft.currency }}</strong>
+      </div>
+      <div class="row">
+        <span>Buying power after</span>
+        <strong>{{ buyingPowerAfter | currency: draft.currency }}</strong>
+      </div>
+      <div class="row">
+        <span>Position after</span>
+        <strong>{{ formatShares(positionAfter) }} shares</strong>
+      </div>
+    </div>
+
+    <p class="fine-print">
+      Quotes are indicative and your fill price may differ. Market orders execute at the next
+      available price.
+    </p>
+
+    @if (error(); as message) {
+      <p class="error">{{ message }}</p>
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button [disabled]="placing()" (click)="dialogRef.close(null)">Back to ticket</button>
+    <button mat-flat-button [disabled]="placing()" (click)="placeOrder()">
+      @if (placing()) {
+        <mat-spinner diameter="18" />
+      } @else {
+        Place order
+      }
+    </button>
+  </mat-dialog-actions>
+}

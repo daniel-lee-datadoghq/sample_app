@@ -1,0 +1,80 @@
+@if (store.selectedArticleId()) {
+  <div class="article">
+    <button type="button" class="back" (click)="store.backToList()">
+      <mat-icon>chevron_left</mat-icon>
+      All company news
+    </button>
+
+    @if (store.article(); as article) {
+      <div class="article-head">
+        <h2>{{ article.headline }}</h2>
+        <div class="hero" [style.background]="tileGradient(article)" aria-hidden="true">
+          <mat-icon>{{ categoryStyles[article.category].icon }}</mat-icon>
+        </div>
+      </div>
+
+      <p class="published">
+        {{ article.publishedAt | date: 'MMMM d, y h:mm a' }} · {{ article.source }}
+      </p>
+
+      <div class="body">
+        @for (paragraph of article.paragraphs; track $index) {
+          <p>
+            @for (segment of paragraph.segments; track $index) {
+              @if (segment.kind === 'ticker') {
+                <button
+                  type="button"
+                  class="ticker-link"
+                  [attr.aria-label]="'Open research for ' + segment.symbol"
+                  (click)="store.openMentionedSymbol(segment.symbol)"
+                >{{ segment.symbol }}</button>
+              } @else {
+                <span>{{ segment.text }}</span>
+              }
+            }
+          </p>
+        }
+      </div>
+
+      <p class="fine-print">
+        Simulated wire copy for this demo. Tickers in the story open that symbol's research.
+      </p>
+    }
+  </div>
+} @else {
+  <div class="news">
+    <div class="range-filter" role="group" aria-label="News date range">
+      @for (range of ranges; track range.value) {
+        <button
+          type="button"
+          class="range"
+          [class.selected]="store.newsRange() === range.value"
+          [attr.aria-pressed]="store.newsRange() === range.value"
+          (click)="setRange(range.value)"
+        >
+          {{ range.label }}
+        </button>
+      }
+    </div>
+
+    @if (!store.visibleArticles().length) {
+      <p class="empty">No stories published in this window. Try a wider range.</p>
+    } @else {
+      <div class="news-grid">
+        @for (article of store.visibleArticles(); track article.id) {
+          <button type="button" class="card" (click)="store.openArticle(article)">
+            <span class="card-text">
+              <span class="headline">{{ article.headline }}</span>
+              <span class="meta">
+                {{ article.source }} · {{ article.publishedAt | date: 'MMM d, y, h:mm a' }}
+              </span>
+            </span>
+            <span class="tile" [style.background]="tileGradient(article)" aria-hidden="true">
+              <mat-icon>{{ categoryStyles[article.category].icon }}</mat-icon>
+            </span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+}

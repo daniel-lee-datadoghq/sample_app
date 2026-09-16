@@ -1,0 +1,114 @@
+@if (store.ratings(); as ratings) {
+  <div class="analyst">
+    <section class="consensus-card">
+      <div class="consensus-head">
+        <span class="label">Analyst consensus</span>
+        <span class="count">{{ ratings.analystCount }} analysts</span>
+      </div>
+      <div class="consensus-value" [class]="bucketClass(ratings.consensus)">{{ ratings.consensus }}</div>
+      <div class="consensus-score">
+        Mean recommendation <strong>{{ ratings.meanScore | number: '1.2-2' }}</strong>
+        <mat-icon
+          class="info"
+          matTooltip="Scored 1.00 (strong buy) through 5.00 (sell), averaged across covering analysts."
+          >info_outline</mat-icon
+        >
+      </div>
+
+      <div class="morningstar">
+        <span class="label">Morningstar rating</span>
+        <span class="stars" [attr.aria-label]="ratings.morningstarStars + ' out of 5 stars'">
+          @for (star of stars; track star) {
+            <mat-icon>{{ star <= ratings.morningstarStars ? 'star' : 'star_border' }}</mat-icon>
+          }
+        </span>
+      </div>
+    </section>
+
+    <section class="distribution">
+      <span class="section-title">Rating distribution</span>
+      @for (bucket of ratings.buckets; track bucket.label) {
+        <div class="bucket">
+          <span class="bucket-label">{{ bucket.label }}</span>
+          <span class="bar-track">
+            <span class="bar" [class]="bucketClass(bucket.label)" [style.width]="barWidth(bucket.count)"></span>
+          </span>
+          <span class="bucket-count">{{ bucket.count }}</span>
+        </div>
+      }
+    </section>
+
+    <section class="targets">
+      <span class="section-title">12-month price target</span>
+      <div class="target-figures">
+        <div>
+          <span class="figure-label">Low</span>
+          <span class="figure">{{ ratings.targetLow | currency: ratings.currency }}</span>
+        </div>
+        <div class="mean">
+          <span class="figure-label">Average</span>
+          <span class="figure">{{ ratings.targetMean | currency: ratings.currency }}</span>
+          @if (store.targetUpside(); as upside) {
+            <span class="upside" [class.down]="upside < 0">
+              {{ upside >= 0 ? '+' : '' }}{{ upside | number: '1.1-1' }}% vs last
+            </span>
+          }
+        </div>
+        <div class="right">
+          <span class="figure-label">High</span>
+          <span class="figure">{{ ratings.targetHigh | currency: ratings.currency }}</span>
+        </div>
+      </div>
+      <div class="target-scale">
+        <span class="scale-track"></span>
+        <span class="marker target" [style.left.%]="targetPosition(ratings)" matTooltip="Average target"></span>
+        @if (store.quote(); as quote) {
+          <span
+            class="marker last"
+            [style.left.%]="pricePosition(ratings)"
+            [matTooltip]="'Last ' + (quote.last | number: '1.2-2')"
+          ></span>
+        }
+      </div>
+      <div class="scale-legend">
+        <span><span class="swatch target"></span> Average target</span>
+        <span><span class="swatch last"></span> Last traded</span>
+      </div>
+    </section>
+
+    <section class="actions">
+      <span class="section-title">Recent analyst actions</span>
+      <table>
+        <thead>
+          <tr>
+            <th>Firm</th>
+            <th>Action</th>
+            <th>Rating</th>
+            <th class="numeric">Target</th>
+            <th class="numeric">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (action of ratings.actions; track action.firm + action.date) {
+            <tr>
+              <td>{{ action.firm }}</td>
+              <td>
+                <span class="action-chip" [class.negative]="action.action.includes('Down') || action.action.includes('lowered')">
+                  {{ action.action }}
+                </span>
+              </td>
+              <td>{{ action.rating }}</td>
+              <td class="numeric">{{ action.priceTarget | currency: ratings.currency }}</td>
+              <td class="numeric">{{ action.date | date: 'mediumDate' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <p class="fine-print">
+      Estimates as of {{ ratings.updatedAt | date: 'mediumDate' }}. Consensus figures are a
+      simulated research feed for this demo and are not investment advice.
+    </p>
+  </div>
+}

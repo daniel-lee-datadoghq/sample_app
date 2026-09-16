@@ -1,0 +1,67 @@
+<div class="positions-body">
+  @if (store.positionsLoading() && !rows().length) {
+    <div class="hint">Loading your holdings…</div>
+  } @else if (!rows().length) {
+    <div class="empty">
+      <mat-icon>donut_large</mat-icon>
+      <p>You have no holdings yet.</p>
+      <button mat-stroked-button (click)="store.togglePanel('stocks')">Place your first trade</button>
+    </div>
+  } @else {
+    <div class="totals">
+      <div>
+        <span class="totals-label">Market value</span>
+        <span class="totals-value">{{ totalValue() | currency: 'USD' }}</span>
+      </div>
+      <div class="right">
+        <span class="totals-label">Unrealized</span>
+        <span class="totals-value" [class.down]="totalGain() < 0">
+          {{ totalGain() >= 0 ? '+' : '' }}{{ totalGain() | currency: 'USD' }}
+        </span>
+      </div>
+    </div>
+
+    @for (group of groups(); track group.accountId) {
+      <div class="group-header">
+        <span class="group-account">{{ group.accountName }} {{ group.accountNumber }}</span>
+        <span class="group-value">{{ group.marketValue | currency: 'USD' }}</span>
+      </div>
+
+      @for (row of group.rows; track row.position.id) {
+        <div class="row">
+          <div class="row-head">
+            <span class="symbol">{{ row.quote ? flags[row.quote.region] : '' }} {{ row.position.symbol }}</span>
+            <span class="market-value">{{ row.marketValue | currency: row.position.currency }}</span>
+          </div>
+          <div class="row-sub">
+            <span class="name">{{ row.position.name }}</span>
+            <span class="gain" [class.down]="row.gain < 0">
+              {{ row.gain >= 0 ? '+' : '' }}{{ row.gain | number: '1.2-2' }}
+              ({{ row.gainPercent | number: '1.2-2' }}%)
+            </span>
+          </div>
+          <div class="row-meta">
+            <span>{{ formatShares(row.position.quantity) }} shares @ {{ row.position.averageCost | currency: row.position.currency }} avg</span>
+            @if (row.quote) {
+              <span class="last">
+                Last {{ row.quote.last | number: '1.2-2' }}
+                <span class="change" [class.down]="row.quote.change < 0">
+                  {{ row.quote.change >= 0 ? '+' : '' }}{{ row.quote.changePercent | number: '1.2-2' }}%
+                </span>
+              </span>
+            }
+          </div>
+          <div class="row-actions">
+            <span class="spacer"></span>
+            <button mat-stroked-button class="action" (click)="trade(row)">Buy more</button>
+            <button mat-stroked-button class="action" (click)="sell(row)">Sell</button>
+          </div>
+        </div>
+      }
+    }
+
+    <p class="fine-print">
+      Market values use the simulated quote feed. Cost basis comes from your settled orders.
+    </p>
+  }
+</div>

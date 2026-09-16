@@ -1,0 +1,44 @@
+<nav class="rail" aria-label="Trading tools">
+  @for (launcher of launchers; track launcher.panel) {
+    <button
+      type="button"
+      class="rail-button"
+      [class.active]="store.panel() === launcher.panel"
+      [attr.aria-expanded]="store.panel() === launcher.panel"
+      [matTooltip]="launcher.title"
+      matTooltipPosition="left"
+      (click)="store.togglePanel(launcher.panel)"
+    >
+      <mat-icon>{{ launcher.icon }}</mat-icon>
+      <span>{{ launcher.label }}</span>
+    </button>
+  }
+</nav>
+
+<aside
+  class="drawer"
+  [class.open]="store.isOpen()"
+  role="dialog"
+  aria-label="Trade panel"
+  [attr.aria-hidden]="!store.isOpen()"
+  [attr.inert]="store.isOpen() ? null : ''"
+>
+  @if (mounted()) {
+    <header class="drawer-header">
+      <h2>{{ title() }}</h2>
+      <button mat-icon-button aria-label="Close trade panel" (click)="store.close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <div class="panel" [class.hidden]="store.panel() !== 'stocks'">
+      <app-trade-ticket />
+    </div>
+    <div class="panel" [class.hidden]="store.panel() !== 'positions'">
+      <app-trade-positions />
+    </div>
+    <div class="panel" [class.hidden]="store.panel() !== 'watchlist'">
+      <app-trade-watchlist />
+    </div>
+  }
+</aside>

@@ -13,16 +13,24 @@ INSERT INTO accounts (id, user_id, name, type, account_number, balance, currency
 
 ALTER TABLE accounts ALTER COLUMN id RESTART WITH 6;
 
-INSERT INTO transactions (id, account_id, date, description, amount, type) VALUES
-(1, 1, '2026-04-16', 'Grocery Store', -82.45, 'DEBIT'),
-(2, 1, '2026-04-15', 'Direct Deposit - Payroll', 3200.00, 'CREDIT'),
-(3, 1, '2026-04-14', 'Electric Company', -145.20, 'DEBIT'),
-(4, 2, '2026-04-13', 'Transfer from Checking', 500.00, 'CREDIT'),
-(5, 1, '2026-04-12', 'Coffee Shop', -6.50, 'DEBIT'),
-(6, 3, '2026-04-11', 'Client Payment', 2500.00, 'CREDIT'),
-(7, 4, '2026-04-10', 'Online Subscription', -14.99, 'DEBIT'),
-(8, 1, '2026-04-09', 'Restaurant', -48.75, 'DEBIT'),
-(9, 4, '2026-04-08', 'Gas Station', -52.30, 'DEBIT'),
-(10, 2, '2026-04-07', 'Interest Payment', 12.50, 'CREDIT');
+INSERT INTO transactions (id, account_id, date, description, amount, type, symbol) VALUES
+(1, 1, '2026-04-16', 'Grocery Store', -82.45, 'DEBIT', NULL),
+(2, 1, '2026-04-15', 'Direct Deposit - Payroll', 3200.00, 'CREDIT', NULL),
+(3, 1, '2026-04-14', 'Electric Company', -145.20, 'DEBIT', NULL),
+(4, 2, '2026-04-13', 'Transfer from Checking', 500.00, 'CREDIT', NULL),
+(5, 1, '2026-04-12', 'Coffee Shop', -6.50, 'DEBIT', NULL),
+(6, 3, '2026-04-11', 'Client Payment', 2500.00, 'CREDIT', NULL),
+(7, 4, '2026-04-10', 'Online Subscription', -14.99, 'DEBIT', NULL),
+(8, 1, '2026-04-09', 'Restaurant', -48.75, 'DEBIT', NULL),
+(9, 4, '2026-04-08', 'Gas Station', -52.30, 'DEBIT', NULL),
+(10, 2, '2026-04-07', 'Interest Payment', 12.50, 'CREDIT', NULL);
 
 ALTER TABLE transactions ALTER COLUMN id RESTART WITH 11;
+
+-- Opening holdings so the Positions panel has content before the first trade
+INSERT INTO positions (id, account_id, symbol, name, currency, quantity, average_cost, version) VALUES
+(1, 1, 'NVDA', 'NVIDIA Corporation', 'USD', 5.00000, 189.3300, 0),
+(2, 2, 'AAPL', 'Apple Inc.', 'USD', 12.00000, 198.4200, 0),
+(3, 2, 'VOO', 'Vanguard S&P 500 ETF', 'USD', 8.50000, 512.7500, 0);
+
+ALTER TABLE positions ALTER COLUMN id RESTART WITH 4;

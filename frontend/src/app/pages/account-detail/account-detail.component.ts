@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CurrencyPipe, DatePipe, TitleCasePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -6,6 +6,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -20,7 +21,7 @@ import { switchMap, map, forkJoin } from 'rxjs';
 @Component({
   selector: 'app-account-detail',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, TitleCasePipe, MatCardModule, MatTableModule, MatIconModule, MatButtonModule, MatChipsModule, MatProgressSpinnerModule],
+  imports: [CurrencyPipe, DatePipe, TitleCasePipe, MatCardModule, MatTableModule, MatIconModule, MatButtonModule, MatChipsModule, MatTooltipModule, MatProgressSpinnerModule],
   templateUrl: './account-detail.component.html',
   styleUrl: './account-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,7 +41,16 @@ export class AccountDetailComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    // Reload whenever account data is written anywhere, including from the trade overlay.
+    let seenVersion = this.api.dataVersion();
+    effect(() => {
+      const version = this.api.dataVersion();
+      if (version === seenVersion) return;
+      seenVersion = version;
+      this.reloadData();
+    });
+  }
 
   ngOnInit(): void {
     this.route.paramMap.pipe(
@@ -77,7 +87,6 @@ export class AccountDetailComponent implements OnInit {
       if (result) {
         this.api.createTransaction(result).subscribe(() => {
           this.snackBar.open('Transaction added', 'Close', { duration: 3000 });
-          this.reloadData();
         });
       }
     });
@@ -91,7 +100,6 @@ export class AccountDetailComponent implements OnInit {
       if (confirmed) {
         this.api.deleteTransaction(txn.id).subscribe(() => {
           this.snackBar.open('Transaction deleted', 'Close', { duration: 3000 });
-          this.reloadData();
         });
       }
     });

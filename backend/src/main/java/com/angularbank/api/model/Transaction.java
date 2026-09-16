@@ -32,6 +32,10 @@ public class Transaction {
     @Column(nullable = false)
     private TransactionType type;
 
+    /** Set when the transaction settled an equity order; null for ordinary banking activity. */
+    @Column(length = 12)
+    private String symbol;
+
     public Transaction() {}
 
     public Transaction(Long accountId, LocalDate date, String description, BigDecimal amount, TransactionType type) {
@@ -61,4 +65,7 @@ public class Transaction {
 
     public TransactionType getType() { return type; }
     public void setType(TransactionType type) { this.type = type; }
+
+    public String getSymbol() { return symbol; }
+    public void setSymbol(String symbol) { this.symbol = symbol; }
 }

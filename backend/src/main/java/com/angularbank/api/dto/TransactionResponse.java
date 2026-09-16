@@ -12,6 +12,7 @@ public class TransactionResponse {
     private final String description;
     private final BigDecimal amount;
     private final String type;
+    private final String symbol;
 
     public TransactionResponse(Transaction transaction) {
         this.id = transaction.getId();
@@ -20,6 +21,7 @@ public class TransactionResponse {
         this.description = transaction.getDescription();
         this.amount = transaction.getAmount();
         this.type = transaction.getType().getValue();
+        this.symbol = transaction.getSymbol();
     }
 
     public Long getId() { return id; }
@@ -28,4 +30,5 @@ public class TransactionResponse {
     public String getDescription() { return description; }
     public BigDecimal getAmount() { return amount; }
     public String getType() { return type; }
+    public String getSymbol() { return symbol; }
 }

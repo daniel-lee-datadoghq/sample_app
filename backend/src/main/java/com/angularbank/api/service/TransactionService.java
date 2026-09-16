@@ -77,6 +77,11 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
 
+        if (transaction.getSymbol() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Trade settlements cannot be deleted. Place an offsetting order instead.");
+        }
+
         Account account = accountService.getAccountById(transaction.getAccountId());
 
         account.setBalance(account.getBalance().subtract(transaction.getAmount()));

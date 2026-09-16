@@ -1,0 +1,88 @@
+@if (store.isOpen()) {
+  <div class="scrim" (click)="store.close()"></div>
+
+  <section
+    class="widget"
+    [class.shifted]="tradeStore.isOpen()"
+    role="dialog"
+    aria-label="Quotes and research"
+  >
+    <header class="widget-header">
+      <span class="monogram" aria-hidden="true">{{ monogram }}</span>
+      <span class="ticker">{{ store.symbol() }}</span>
+      @if (store.quote(); as quote) {
+        <span class="company">{{ quote.name }}</span>
+        @if (quote.fractional) {
+          <span class="fractional">Fractional</span>
+        }
+      }
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="header-search">
+        <mat-icon matPrefix>search</mat-icon>
+        <input
+          matInput
+          placeholder="Search name or symbol"
+          [formControl]="searchControl"
+          [matAutocomplete]="researchAuto"
+        />
+        <mat-autocomplete #researchAuto (optionSelected)="onSymbolSelected($event.option.value)">
+          @for (match of matches(); track match.symbol) {
+            <mat-option [value]="match.symbol">
+              <span class="option-symbol">{{ flags[match.region] }} {{ match.symbol }}</span>
+              <span class="option-name">{{ match.name }}</span>
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <button mat-icon-button aria-label="Close research" (click)="store.close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <div class="price-row">
+      @if (store.quote(); as quote) {
+        <span class="last">{{ quote.last | number: '1.2-2' }}</span>
+        <span class="ccy">{{ quote.currency }}</span>
+        <span class="change" [class.down]="quote.change < 0">
+          <mat-icon>{{ quote.change < 0 ? 'south_east' : 'north_east' }}</mat-icon>
+          {{ abs(quote.change) | number: '1.2-2' }} ({{ abs(quote.changePercent) | number: '1.2-2' }}%)
+        </span>
+        <mat-icon class="refresh" matTooltip="Quotes refresh automatically">refresh</mat-icon>
+        <span class="as-of">As of {{ asOf }}</span>
+      } @else {
+        <span class="loading-price">Loading quote…</span>
+      }
+    </div>
+
+    <nav class="view-tabs" aria-label="Research views">
+      @for (view of views; track view.value) {
+        <button
+          type="button"
+          class="tab"
+          [class.selected]="store.view() === view.value"
+          [attr.aria-pressed]="store.view() === view.value"
+          (click)="store.setView(view.value)"
+        >
+          {{ view.label }}
+        </button>
+      }
+      <span class="tab-spacer"></span>
+      <button mat-flat-button class="trade-button" (click)="store.trade()">Trade</button>
+    </nav>
+
+    <div class="widget-body" [class.loading]="store.viewLoading()">
+      @if (store.view() === 'analyst') {
+        <app-qr-analyst-ratings />
+      } @else {
+        <app-qr-news />
+      }
+    </div>
+
+    @if (store.viewLoading()) {
+      <div class="body-spinner">
+        <mat-spinner diameter="44" />
+      </div>
+    }
+  </section>
+}

@@ -14,4 +14,6 @@ export interface Transaction {
   description: string;
   amount: number;
   type: 'debit' | 'credit';
+  /** Set when the transaction settled an equity order. */
+  symbol?: string | null;
 }

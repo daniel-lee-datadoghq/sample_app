@@ -8,6 +8,7 @@ import com.angularbank.api.model.Account;
 import com.angularbank.api.model.AccountType;
 import com.angularbank.api.model.User;
 import com.angularbank.api.repository.AccountRepository;
+import com.angularbank.api.repository.PositionRepository;
 import com.angularbank.api.repository.TransactionRepository;
 import com.angularbank.api.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -24,11 +25,18 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final PositionRepository positionRepository;
     private final UserRepository userRepository;
 
-    public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository, UserRepository userRepository) {
+    public AccountService(
+            AccountRepository accountRepository,
+            TransactionRepository transactionRepository,
+            PositionRepository positionRepository,
+            UserRepository userRepository
+    ) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
+        this.positionRepository = positionRepository;
         this.userRepository = userRepository;
     }
 
@@ -78,6 +86,7 @@ public class AccountService {
     public void deleteAccount(Long id) {
         Account account = getAccountById(id);
         transactionRepository.deleteByAccountId(id);
+        positionRepository.deleteByAccountId(id);
         accountRepository.delete(account);
     }
 

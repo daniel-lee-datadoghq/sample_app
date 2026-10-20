@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
@@ -11,8 +11,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DecimalPipe } from '@angular/common';
-import { ResearchView } from '../../models/research.model';
+import { RESEARCH_VIEW_FLAGS, ResearchView } from '../../models/research.model';
 import { REGION_FLAGS, SymbolSummary } from '../../models/trade.model';
+import { FeatureFlagService } from '../../services/feature-flag.service';
 import { MarketDataService } from '../../services/market-data.service';
 import { ResearchStore } from '../../services/research.store';
 import { TradeTicketStore } from '../../services/trade-ticket.store';
@@ -55,15 +56,49 @@ export class QrWidgetComponent {
   readonly store = inject(ResearchStore);
   readonly tradeStore = inject(TradeTicketStore);
   private readonly market = inject(MarketDataService);
+  private readonly featureFlags = inject(FeatureFlagService);
   private readonly dialog = inject(MatDialog);
 
-  readonly views = VIEWS;
-  readonly flags = REGION_FLAGS;
+  readonly regionFlags = REGION_FLAGS;
+
+  /** Only the views the server has enabled for this user's roles. */
+  readonly availableViews = computed(() =>
+    VIEWS.filter((view) => this.featureFlags.isEnabled(RESEARCH_VIEW_FLAGS[view.value])),
+  );
+
+  readonly flagsLoaded = this.featureFlags.loaded;
+
+  /**
+   * The view to render. Falls back to the first entitled tab so a stale selection (News left
+   * open by a previous user) cannot mount a gated panel while the store catches up.
+   */
+  readonly activeView = computed(() => {
+    const available = this.availableViews();
+    const current = this.store.view();
+    if (available.some((view) => view.value === current)) return current;
+    return available[0]?.value ?? null;
+  });
 
   readonly searchControl = new FormControl('', { nonNullable: true });
   readonly matches = signal<SymbolSummary[]>([]);
 
   constructor() {
+    // These flags decide which tabs exist, so opening the overlay is the moment they are
+    // actually used. Reporting here lands the evaluation on the view the user is looking at,
+    // and re-runs if the flag set arrives late or changes with a different user.
+    effect(() => {
+      if (!this.store.isOpen()) return;
+      this.featureFlags.reportEvaluations(VIEWS.map((view) => RESEARCH_VIEW_FLAGS[view.value]));
+    });
+
+    // A gated-off view must never stay selected, e.g. after switching users.
+    effect(() => {
+      const available = this.availableViews();
+      if (!available.length) return;
+      if (available.some((view) => view.value === this.store.view())) return;
+      this.store.setView(available[0].value);
+    });
+
     // Clear the search box whenever a different symbol is loaded.
     effect(() => {
       this.store.symbol();

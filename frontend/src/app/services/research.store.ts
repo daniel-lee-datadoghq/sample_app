@@ -7,8 +7,10 @@ import {
   NewsArticle,
   NewsArticleDetail,
   NewsRange,
+  RESEARCH_VIEW_FLAGS,
   ResearchView,
 } from '../models/research.model';
+import { FeatureFlagService } from './feature-flag.service';
 import { MarketDataService } from './market-data.service';
 import { ResearchDataService } from './research-data.service';
 import { TradeTicketStore } from './trade-ticket.store';
@@ -25,6 +27,7 @@ export class ResearchStore {
   private readonly market = inject(MarketDataService);
   private readonly research = inject(ResearchDataService);
   private readonly tradeStore = inject(TradeTicketStore);
+  private readonly flags = inject(FeatureFlagService);
 
   readonly symbol = signal<string | null>(null);
   readonly isOpen = computed(() => this.symbol() !== null);
@@ -95,7 +98,9 @@ export class ResearchStore {
     effect(() => {
       const symbol = this.symbol();
       const view = this.view();
-      if (!symbol) return;
+      // `isEnabled` is read here so a flag set that arrives after open still fetches, and a
+      // view left selected by a previous user is not fetched once it is gated off.
+      if (!symbol || !this.flags.isEnabled(RESEARCH_VIEW_FLAGS[view])) return;
       if (view === 'analyst') this.fetchRatings(symbol);
       else this.fetchNews(symbol);
     });
@@ -117,6 +122,9 @@ export class ResearchStore {
       this.clearArticle();
     }
     this.symbol.set(next);
+    // Report before the action so it carries the flag state. The widget also reports on open,
+    // which covers a flag set that is still in flight at this point.
+    this.flags.reportEvaluations(Object.values(RESEARCH_VIEW_FLAGS));
     datadogRum.addAction('research_widget_opened', { symbol: next, source, view: this.view() });
   }
 
@@ -126,10 +134,12 @@ export class ResearchStore {
 
   setView(view: ResearchView): void {
     if (this.view() === view) return;
+    // Defence in depth: never fetch a view the server has not enabled for this user.
+    if (!this.flags.isEnabled(RESEARCH_VIEW_FLAGS[view])) return;
     // Leaving and re-entering News should land on the list, not the story you last read.
     this.clearArticle();
     this.view.set(view);
-    datadogRum.addAction('research_view_selected', { symbol: this.symbol(), view });
+    // No custom action here: the tab click is auto-collected, named by `data-dd-action-name`.
   }
 
   setNewsRange(range: NewsRange): void {
@@ -170,8 +180,9 @@ export class ResearchStore {
   trade(): void {
     const symbol = this.symbol();
     if (!symbol) return;
+    // `tradeSymbol` emits `trade_symbol_selected` with `source: 'research'`, and the button
+    // click is auto-collected, so a third action for the same interaction would be noise.
     this.tradeStore.tradeSymbol(symbol, { source: 'research' });
-    datadogRum.addAction('research_trade_clicked', { symbol, view: this.view() });
   }
 
   private clearArticle(): void {

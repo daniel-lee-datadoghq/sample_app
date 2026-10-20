@@ -198,6 +198,15 @@ $toolbar-height: 64px;
   }
 }
 
+.not-entitled {
+  margin: 24px auto 0;
+  max-width: 48ch;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--mat-sys-on-surface-variant);
+}
+
 .body-spinner {
   position: absolute;
   inset: 120px 0 0 0;

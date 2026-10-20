@@ -17,6 +17,9 @@ datadogRum.init({
   trackUserInteractions: environment.datadog.trackUserInteractions,
   trackResources: environment.datadog.trackResources,
   trackLongTasks: environment.datadog.trackLongTasks,
+  // View and error events always carry flag data; add actions so a click on a gated feature
+  // can be segmented by the flag that allowed it.
+  trackFeatureFlagsForEvents: ['action'],
   // Connect RUM sessions to backend APM traces
   allowedTracingUrls: environment.datadog.allowedTracingUrls,
   traceSampleRate: environment.datadog.traceSampleRate,

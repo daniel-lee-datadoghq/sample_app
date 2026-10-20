@@ -5,11 +5,15 @@ import com.angularbank.api.dto.AuthResponse;
 import com.angularbank.api.dto.LoginRequest;
 import com.angularbank.api.dto.RegisterRequest;
 import com.angularbank.api.model.User;
+import com.angularbank.api.model.UserRole;
 import com.angularbank.api.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Service
 public class AuthService {
@@ -33,6 +37,7 @@ public class AuthService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRoles(new LinkedHashSet<>(Set.of(UserRole.RETAIL)));
         userRepository.save(user);
 
         return buildAuthResponse(user);

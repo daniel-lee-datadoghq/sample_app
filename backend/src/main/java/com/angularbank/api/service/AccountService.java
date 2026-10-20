@@ -6,13 +6,10 @@ import com.angularbank.api.dto.CreateAccountRequest;
 import com.angularbank.api.dto.UpdateAccountRequest;
 import com.angularbank.api.model.Account;
 import com.angularbank.api.model.AccountType;
-import com.angularbank.api.model.User;
 import com.angularbank.api.repository.AccountRepository;
 import com.angularbank.api.repository.PositionRepository;
 import com.angularbank.api.repository.TransactionRepository;
-import com.angularbank.api.repository.UserRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,18 +23,18 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final PositionRepository positionRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public AccountService(
             AccountRepository accountRepository,
             TransactionRepository transactionRepository,
             PositionRepository positionRepository,
-            UserRepository userRepository
+            CurrentUserService currentUserService
     ) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.positionRepository = positionRepository;
-        this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
     }
 
     public List<AccountResponse> getAllAccounts() {
@@ -106,9 +103,6 @@ public class AccountService {
     }
 
     private Long getCurrentUserId() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-        return user.getId();
+        return currentUserService.requireCurrentUserId();
     }
 }

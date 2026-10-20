@@ -28,7 +28,7 @@
         <mat-autocomplete #researchAuto (optionSelected)="onSymbolSelected($event.option.value)">
           @for (match of matches(); track match.symbol) {
             <mat-option [value]="match.symbol">
-              <span class="option-symbol">{{ flags[match.region] }} {{ match.symbol }}</span>
+              <span class="option-symbol">{{ regionFlags[match.region] }} {{ match.symbol }}</span>
               <span class="option-name">{{ match.name }}</span>
             </mat-option>
           }
@@ -56,26 +56,41 @@
     </div>
 
     <nav class="view-tabs" aria-label="Research views">
-      @for (view of views; track view.value) {
+      @for (view of availableViews(); track view.value) {
         <button
           type="button"
           class="tab"
-          [class.selected]="store.view() === view.value"
-          [attr.aria-pressed]="store.view() === view.value"
+          [class.selected]="activeView() === view.value"
+          [attr.aria-pressed]="activeView() === view.value"
+          [attr.data-dd-action-name]="'research_view_' + view.value"
           (click)="store.setView(view.value)"
         >
           {{ view.label }}
         </button>
       }
       <span class="tab-spacer"></span>
-      <button mat-flat-button class="trade-button" (click)="store.trade()">Trade</button>
+      <button
+        mat-flat-button
+        class="trade-button"
+        data-dd-action-name="research_trade"
+        (click)="store.trade()"
+      >
+        Trade
+      </button>
     </nav>
 
     <div class="widget-body" [class.loading]="store.viewLoading()">
-      @if (store.view() === 'analyst') {
+      @if (!flagsLoaded()) {
+        <p class="not-entitled">Loading research…</p>
+      } @else if (activeView() === 'analyst') {
         <app-qr-analyst-ratings />
-      } @else {
+      } @else if (activeView() === 'news') {
         <app-qr-news />
+      } @else {
+        <p class="not-entitled">
+          Research views are not enabled for your account. Contact your advisor to add research
+          entitlements.
+        </p>
       }
     </div>
 

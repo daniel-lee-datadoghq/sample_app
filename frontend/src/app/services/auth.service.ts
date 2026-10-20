@@ -39,17 +39,19 @@ export class AuthService {
   private readonly baseUrl = '/api/auth';
 
   private readonly currentUser = signal<AuthUser | null>(this.loadUser());
+  private readonly currentUserType = signal<UserType>('low_net_worth');
+  private readonly currentRoles = signal<string[]>([]);
 
   readonly user = this.currentUser.asReadonly();
+  readonly roles = this.currentRoles.asReadonly();
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
   ) {
-    const user = this.currentUser();
-    if (user) {
-      this.setRumUser(user, 'low_net_worth');
+    if (this.currentUser()) {
+      this.applyRumUser();
     }
   }
 
@@ -69,6 +71,8 @@ export class AuthService {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.currentUser.set(null);
+    this.currentRoles.set([]);
+    this.currentUserType.set('low_net_worth');
     datadogRum.clearUser();
     this.router.navigate(['/login']);
   }
@@ -78,18 +82,32 @@ export class AuthService {
   }
 
   updateUserType(totalBalance: number): void {
-    const user = this.currentUser();
-    if (!user) return;
-    const userType = totalBalance >= HIGH_NET_WORTH_THRESHOLD ? 'high_net_worth' : 'low_net_worth';
-    this.setRumUser(user, userType);
+    this.currentUserType.set(
+      totalBalance >= HIGH_NET_WORTH_THRESHOLD ? 'high_net_worth' : 'low_net_worth',
+    );
+    this.applyRumUser();
   }
 
-  private setRumUser(user: AuthUser, userType: UserType): void {
+  /** Called once the server has resolved this user's entitlement roles. */
+  setRoles(roles: string[]): void {
+    this.currentRoles.set(roles);
+    this.applyRumUser();
+  }
+
+  /**
+   * `setUser` replaces the whole user object, so every attribute is re-sent together. Setting
+   * them piecemeal would let a later call drop the roles or the user type.
+   */
+  private applyRumUser(): void {
+    const user = this.currentUser();
+    if (!user) return;
+    const roles = this.currentRoles();
     datadogRum.setUser({
       id: String(user.id),
       name: user.name,
       email: user.email,
-      user_type: userType,
+      user_type: this.currentUserType(),
+      ...(roles.length ? { roles: roles.join(',') } : {}),
     });
   }
 
@@ -98,7 +116,9 @@ export class AuthService {
     const user: AuthUser = { id: response.id, name: response.name, email: response.email };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     this.currentUser.set(user);
-    this.setRumUser(user, 'low_net_worth');
+    this.currentRoles.set([]);
+    this.currentUserType.set('low_net_worth');
+    this.applyRumUser();
   }
 
   private loadUser(): AuthUser | null {

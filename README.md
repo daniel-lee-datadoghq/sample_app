@@ -52,8 +52,16 @@ This will install npm dependencies, start all three services, and wait for the b
 ### 4. Open the app
 
 - **URL**: http://localhost:4200
-- **Seed user**: `demo@angularbank.com` / `password123` (has 5 pre-loaded accounts)
-- **New users**: Register via the app (start with 0 accounts)
+- **Seed users** — all with the password `password123`:
+
+| Email | Name | Roles | Accounts | Sees the News tab |
+|-------|------|-------|----------|-------------------|
+| `demo@angularbank.com` | Demo User | `premium` | 5 | Yes |
+| `retail@angularbank.com` | Riya Sharma | `retail` | 2 | No |
+| `advisor@angularbank.com` | Marcus Webb | `advisor`, `premium` | 2 | Yes |
+
+- **New users**: Register via the app. They start with no accounts and the `retail` role, so the
+  News tab is gated off until a role is added.
 
 ### Running services individually
 
@@ -131,8 +139,47 @@ route change. Two views are implemented for demonstration: **Analyst ratings** a
   already loaded. The research overlay slides aside instead of closing, so both stay usable.
 - **Data** — `ResearchDataService` is a simulated research feed. Figures are derived from a
   per-symbol seed, so they stay stable across renders while differing between symbols.
-- **RUM custom actions** — `research_widget_opened`, `research_view_selected`,
-  `research_article_opened` and `research_trade_clicked`
+- **RUM actions** — custom actions are reserved for events that carry business context a click
+  cannot: `research_widget_opened` (with its entry point) and `research_article_opened` (with
+  the article id). The tab and Trade buttons are left to RUM's automatic click collection, with
+  `data-dd-action-name` giving them stable names (`research_view_news`, `research_trade`) that
+  survive copy changes.
+
+### Server-Side Feature Flags
+The News tab in the research overlay is gated by a flag the **server** resolves from the signed-in
+user's roles. The client never decides what it is entitled to see.
+
+- **Roles** — `UserRole` (`retail` / `premium` / `advisor`) stored per user in `user_roles`. A
+  user can hold several; `AuthService.register()` assigns `retail` to new sign-ups.
+- **Flag store** — the `feature_flags` table holds a key, a description and an `enabled_for_all`
+  fallback; `feature_flag_roles` lists the roles that switch each flag on. Both are seeded in
+  `data.sql`, so flipping a flag is a data change rather than a code change.
+- **Resolution** — `GET /api/feature-flags` returns `{ flags, roles }` for the caller. The JWT
+  carries only the email, so roles are read from the database per request:
+
+```json
+{ "flags": { "research.analyst_ratings": true, "research.news": false }, "roles": ["retail"] }
+```
+
+- **Client** — `FeatureFlagService` fetches the set once the user is authenticated (and again
+  when a different user signs in), exposing `isEnabled(key)`. It is default-closed: an unknown or
+  not-yet-loaded flag is off. The research overlay derives its tab strip from the flags, and
+  `ResearchStore.setView()` refuses a gated view as a second line of defence.
+- **RUM** — two separate dimensions, each using the mechanism designed for it:
+  - **Flag evaluations** are reported with `datadogRum.addFeatureFlagEvaluation()` at the point
+    a flag gates something the user sees — opening the research overlay, where the flags decide
+    which tabs exist. This mirrors the `flag-used` style hooks Datadog's vendor integrations
+    use (LaunchDarkly `flag-used`, Split `impressionListener`, ConfigCat `flagEvaluated`), and
+    it suits how the SDK stores the data: flag context is created empty per view and only
+    attaches to view and error events. Views where no flag was consulted carry no flag data,
+    which is the intended behaviour, not a gap.
+  - **Cohort membership** comes from the user's roles on the RUM user context, next to
+    `user_type`. Unlike flag context, `usr` has no event-type filter in the SDK, so it rides on
+    every view, action, error and resource — that is what to segment a whole funnel by.
+  - Datadog reads `.` in an attribute name as a nested path, so keys are flattened for RUM only:
+    `research.news` is reported as `research_news`. The API and database keys keep their dots.
+  - `trackFeatureFlagsForEvents: ['action']` in `main.ts` extends flag data to action events
+    (view and error always carry it), so the click on the News tab itself is segmentable.
 
 ### Datadog RUM
 - **RUM SDK** integrated in both parent app and iframes via npm (`@datadog/browser-rum`)
@@ -152,7 +199,8 @@ route change. Two views are implemented for demonstration: **Analyst ratings** a
 │       ├── config/                 # Security, JWT, error handling
 │       ├── controller/             # Auth, Account, Transaction endpoints
 │       ├── dto/                    # Request/response DTOs with validation
-│       ├── model/                  # JPA entities (User, Account, Transaction, Position)
+│       ├── model/                  # JPA entities (User, Account, Transaction, Position,
+│       │                           #   FeatureFlag) + UserRole
 │       ├── repository/             # Spring Data JPA repositories
 │       └── service/                # Business logic with per-user scoping
 ├── frontend/                       # Angular SPA
@@ -237,3 +285,4 @@ All endpoints except `/api/auth/**` require a JWT token in the `Authorization: B
 | GET | `/api/positions` | Current user's holdings across all accounts |
 | GET | `/api/positions/account/:id` | Holdings for one account (ownership verified) |
 | POST | `/api/orders` | Place an equity order: settles cash + updates the holding |
+| GET | `/api/feature-flags` | Flags resolved from the current user's roles |

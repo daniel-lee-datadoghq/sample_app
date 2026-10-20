@@ -1,5 +1,13 @@
+import { FLAG_RESEARCH_ANALYST_RATINGS, FLAG_RESEARCH_NEWS } from './feature-flag.model';
+
 /** Views implemented in the Quotes & Research overlay. */
 export type ResearchView = 'analyst' | 'news';
+
+/** Server-side flag that must be on for a view to be offered. */
+export const RESEARCH_VIEW_FLAGS: Record<ResearchView, string> = {
+  analyst: FLAG_RESEARCH_ANALYST_RATINGS,
+  news: FLAG_RESEARCH_NEWS,
+};
 
 export type NewsRange = '7d' | '30d' | 'all';
 
